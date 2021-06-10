@@ -33,6 +33,12 @@ const db = knex({
 	},
 });
 
+// Routes
+
+app.get("/", (req, res) => {
+	res.status(200).send("<h1>Welcome to polyevents!	</h1>");
+});
+
 //Port listener
 const PORT = parseInt(process.env.PORT);
 app.listen(PORT, () => console.log("App is running on port " + PORT));
