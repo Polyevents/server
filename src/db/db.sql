@@ -10,6 +10,7 @@
 CREATE TABLE users (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
     email VARCHAR UNIQUE NOT NULL,
+		google_uid VARCHAR UNIQUE NOT NULL,
     username VARCHAR UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
     age SMALLINT NOT NULL,
@@ -23,7 +24,7 @@ CREATE TABLE users (
 CREATE TABLE referral_codes (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
     user_id VARCHAR UNIQUE NOT NULL REFERENCES users(id),
-    code VARCHAR(6) UNIQUE NOT NULL,
+    code VARCHAR(10) UNIQUE NOT NULL,
     users_joined VARCHAR[],
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -35,7 +36,6 @@ CREATE TABLE markets (
     image_link VARCHAR NOT NULL,
     name TEXT NOT NULL,
     volume NUMERIC(10, 2) DEFAULT 0,
-    followed_by VARCHAR[],
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

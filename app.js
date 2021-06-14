@@ -1,9 +1,8 @@
-import express from "express";
-import cors from "cors";
-import logger from "morgan";
-import helmet from "helmet";
-import knex from "knex";
-import dotenv from "dotenv";
+const express = require("express");
+const cors = require("cors");
+const logger = require("morgan");
+const helmet = require("helmet");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
@@ -20,24 +19,31 @@ app.use(
 	)
 );
 
-//db config
-const { DB_HOST, DB_USERNAME, DB_PASSWORD } = process.env;
-const db = knex({
-	client: "pg",
-	version: "12.5",
-	connection: {
-		host: DB_HOST,
-		user: DB_USERNAME,
-		password: DB_PASSWORD,
-		database: "postgres",
-	},
-});
+//db connection
+const db = require("./src/config/config");
+try {
+	let testUsers = db.select("*").from("users");
+	if (testUsers) console.log("db connected!");
+} catch (err) {
+	console.log("Error with db connection!");
+}
 
 // Routes
-
 app.get("/", (req, res) => {
-	res.status(200).send("<h1>Welcome to polyevents!	</h1>");
+	res.writeHead(301, { Location: "https://polyevents.in" });
+	res.end();
 });
+
+const {
+	handleAuth,
+	handleValidity,
+	handleMarket,
+	handleEvent,
+} = require("./src/routes");
+app.use("/api/v1/user", handleAuth);
+app.use("/api/v1/check", handleValidity);
+app.use("/api/v1/market", handleMarket);
+app.use("/api/v1/event", handleEvent);
 
 //Port listener
 const PORT = parseInt(process.env.PORT);
