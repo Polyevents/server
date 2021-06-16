@@ -1,3 +1,3 @@
 # Polyevents
 
-This is the server for polyevents app!
+This is the server repo for polyevents app!
