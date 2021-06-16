@@ -205,7 +205,7 @@ const handleUsernameUpdate = async (req, res, next) => {
 		return res.status(errorObj.status).json(errorObj);
 	}
 
-	let isUsernameValid = checkUsername(username);
+	let isUsernameValid = checkUsername(newUsername);
 	if (!isUsernameValid) {
 		let userMessage = "Username can only contain _";
 		const errorObj = handleMessage("INVALID_REQUEST_SYNTAX", null, userMessage);

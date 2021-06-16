@@ -3,7 +3,7 @@ const handleMessage = require("../utils/MessageHandler");
 
 const listMarkets = async (req, res, next) => {
 	try {
-		let markets = await db("markets").select("*");
+		let markets = await db("markets").select("*").orderBy("volume", "desc");
 		if (markets.length > 0) {
 			let userMessage = "Found markets!";
 			const messageObj = handleMessage("REQUEST_SUCCESS", markets, userMessage);
@@ -28,35 +28,26 @@ const followMarket = async (req, res, next) => {
 	let userId = req.user.id;
 	let marketId = req.params.id;
 
-	//check if market exists
-	// Append only if market is not followed
 	try {
 		await db.transaction(async (trx) => {
-			let foundMarket = await trx("markets").where(
-				{
+			let foundMarket = await trx("markets")
+				.where({
 					id: marketId,
-				},
-				"id"
-			);
+				})
+				.select("id");
 
-			if (foundMarket[0] === marketId) {
-				let getUserMarketsArray = await trx("users").where(
-					{
-						id: userId,
-					},
-					"markets_followed"
-				);
+			if (foundMarket[0].id === marketId) {
+				let getUserMarketsArray = await trx("users").where({
+					id: userId,
+				});
 
 				getUserMarkets = getUserMarketsArray[0];
 
 				if (!getUserMarkets.includes(marketId)) {
 					getUserMarkets.push(marketId);
-					let followMarket = await trx("users").update(
-						{
-							markets_followed: getUserMarkets,
-						},
-						"markets_followed"
-					);
+					let followMarket = await trx("users").update({
+						markets_followed: getUserMarkets,
+					});
 					let userMessage = "Market followed";
 					const messageObj = handleMessage(
 						"REQUEST_SUCCESS",
@@ -73,6 +64,14 @@ const followMarket = async (req, res, next) => {
 					);
 					return res.status(errorObject.status).json(errorObject);
 				}
+			} else {
+				let userMessage = "Server facing an error!";
+				const errorObject = handleMessage(
+					"INTERNAL_SERVER_ERROR",
+					null,
+					userMessage
+				);
+				return res.status(errorObject.status).json(errorObject);
 			}
 		});
 	} catch (err) {

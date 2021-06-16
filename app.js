@@ -22,8 +22,8 @@ app.use(
 //db connection
 const db = require("./src/config/config");
 try {
-	let testUsers = db.select("*").from("users");
-	if (testUsers) console.log("db connected!");
+	let testMarkets = db.select("*").from("markets");
+	if (testMarkets) console.log("db connected!");
 } catch (err) {
 	console.log("Error with db connection!");
 }
@@ -39,11 +39,15 @@ const {
 	handleValidity,
 	handleMarket,
 	handleEvent,
+	handleNews,
 } = require("./src/routes");
+
 app.use("/api/v1/user", handleAuth);
 app.use("/api/v1/check", handleValidity);
 app.use("/api/v1/market", handleMarket);
 app.use("/api/v1/event", handleEvent);
+app.use("/api/v1/news", handleNews);
+// app.use("/api/v1/comment", handleComments);
 
 //Port listener
 const PORT = parseInt(process.env.PORT);

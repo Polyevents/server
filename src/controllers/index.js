@@ -19,9 +19,24 @@ const {
 	trendingMarkets,
 } = require("./Market.controllers");
 
-const { requestEvent } = require("./Event.controllers");
+const {
+	requestEvent,
+	getEventsOfSpecificMarket,
+	createEvent,
+	getEventsOfFollowedMarkets,
+} = require("./Event.controllers");
+
+const { fetchNews, storeNews, deleteNews } = require("./News.controllers");
+
+// const { getEventComments } = require("./Comment.controllers");
 
 module.exports = {
+	getEventsOfFollowedMarkets,
+	createEvent,
+	getEventsOfSpecificMarket,
+	deleteNews,
+	storeNews,
+	fetchNews,
 	handleLogin,
 	unfollowMarket,
 	handleUsernameUpdate,

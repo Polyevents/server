@@ -9,5 +9,5 @@ router.get("/username/:username", handleUsernameCheck);
 
 router.get("/referral/:code", handleReferralCodeCheck);
 
-router.get("/user-exists", isUserExisting);
+router.post("/user-exists", isUserExisting);
 module.exports = router;

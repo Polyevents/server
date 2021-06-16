@@ -132,6 +132,18 @@ CREATE TABLE bids (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE news(
+    id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
+    source TEXT NOT NULL,
+    news_link VARCHAR NOT NULL,
+    image_link VARCHAR NOT NULL,
+    heading TEXT NOT NULL,
+    published_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+DELETE FROM news WHERE published_at < '2021-06-14T16:30:00.000Z';
 
 DROP TABLE 
 referral_codes, 
