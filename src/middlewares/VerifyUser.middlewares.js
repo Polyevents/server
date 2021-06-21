@@ -27,7 +27,10 @@ const verifyToken = async (req, res, next) => {
 		}
 
 		const { id } = payload;
-		const fetchedUser = await db("users").where({ id: id }).select("*");
+		const fetchedUser = await db("users")
+			.where({ id: id })
+			.select("*")
+			.innerJoin("user_roles", "users.id", "user_roles.user_id");
 		try {
 			req.user = fetchedUser[0];
 			next();

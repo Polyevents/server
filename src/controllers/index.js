@@ -31,7 +31,7 @@ const { fetchNews, storeNews, deleteNews } = require("./News.controllers");
 // const { getEventComments } = require("./Comment.controllers");
 
 module.exports = {
-	getEventsOfFollowedMarkets,
+	getEventsOfFollowedMarkets, 
 	createEvent,
 	getEventsOfSpecificMarket,
 	deleteNews,
