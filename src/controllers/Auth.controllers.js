@@ -2,9 +2,11 @@ const db = require("../config/config");
 const handleMessage = require("../utils/MessageHandler");
 const signJwt = require("../utils/SignJwt");
 const createId = require("../utils/IdGenerator");
-const checkUsername = require("../utils/UsernameTester");
+const checkUsername = require("../utils/UsernameRegexTester");
 
-const handleLogin = async (req, res, next) => {
+const debug = require("../utils/DebugHandler");
+
+const doesUserExist = async (req, res, next) => {
 	const { email, googleUid } = req.body;
 
 	if (!email || !googleUid) {
@@ -25,8 +27,15 @@ const handleLogin = async (req, res, next) => {
 			return res.status(errorObj.status).json(errorObj);
 		}
 
+		debug(
+			"Auth.cont.js",
+			32,
+			"getting user after checking if the user exists",
+			user
+		);
+
 		let userMessage = null;
-		let userId = user.id;
+		let userId = user[0].id;
 		const JWT_TOKEN = signJwt(userId);
 		const messageObj = handleMessage(
 			"REQUEST_SUCCESS",
@@ -51,7 +60,6 @@ const handleSignup = async (req, res, next) => {
 		googleUid,
 		username,
 		fullName,
-		age,
 		profileImage,
 		marketsFollowed,
 		referralCodeUsed,
@@ -62,16 +70,15 @@ const handleSignup = async (req, res, next) => {
 		!googleUid ||
 		!username ||
 		!fullName ||
-		!age ||
 		!profileImage ||
-		!marketsFollowed
+		!marketsFollowed ||
+		marketsFollowed.length === 0
 	) {
 		let userMessage = null;
 		const errorObj = handleMessage("INVALID_REQUEST_SYNTAX", null, userMessage);
 		return res.status(errorObj.status).json(errorObj);
 	}
 
-	age = parseInt(age);
 	fullName = fullName.toLowerCase();
 	email = email.toLowerCase();
 	username = username.toLowerCase();
@@ -80,6 +87,7 @@ const handleSignup = async (req, res, next) => {
 	let referralCodeId = await createId();
 	let referralCode = await createId();
 	let portfolioId = await createId();
+	let userRoleId = await createId();
 
 	try {
 		await db.transaction(async (trx) => {
@@ -90,12 +98,23 @@ const handleSignup = async (req, res, next) => {
 					email,
 					username,
 					full_name: fullName,
-					age,
 					profile_image: profileImage,
 					markets_followed: marketsFollowed,
 				},
 				"id"
 			);
+
+			debug(
+				"Auth.cont.js",
+				99,
+				"Getting returned userid array from trasnaction after creating a user in userstable in signup route.",
+				returnedUserId
+			);
+
+			let newUserRole = await trx("user_roles").insert({
+				id: userRoleId,
+				user_id: returnedUserId[0],
+			});
 
 			let newReferralCode = await trx("referral_codes").insert({
 				id: referralCodeId,
@@ -120,17 +139,18 @@ const handleSignup = async (req, res, next) => {
 						"user_id"
 					);
 
-				let userOfReferralCode = await trx("portfolios")
-					.where({
-						user_id: referralCodeUser[0],
-					})
-					.increment("wallet_balance", 50);
+				debug(
+					"Auth.cont.js",
+					99,
+					"Getting returned userid array from trasnaction after checking the referral code in userstable in signup route.",
+					referralCodeUser
+				);
 
-				let newUser = await trx("portfolios")
-					.where({
-						user_id: returnedUserId[0],
-					})
-					.increment("wallet_balance", 50);
+				let amountOfBalanceToIncrement = 50;
+
+				let userOfReferralCode = await trx("portfolios")
+					.whereIn("user_id", [returnedUserId[0], referralCodeUser[0]])
+					.increment("wallet_balance", amountOfBalanceToIncrement);
 			}
 
 			let jwtToken = signJwt(returnedUserId[0]);
@@ -153,14 +173,20 @@ const handleSignup = async (req, res, next) => {
 	}
 };
 
-const getExistingUser = async (req, res, next) => {
+const getLoggedUser = async (req, res, next) => {
+	if (!req.user) {
+		let userMessage = "Log in to continue!";
+		const errorObject = handleMessage("NOT_LOGGED_IN", null, userMessage);
+		return res.status(errorObject.status).json(errorObject);
+	}
+
 	let userMessage = null;
 	const messageObj = handleMessage("REQUEST_SUCCESS", req.user, userMessage);
 	return res.status(messageObj.status).json(messageObj);
 };
 
 const getReferralcode = async (req, res, next) => {
-	let userId = req.user.id;
+	let userId = req.user.user_id;
 
 	try {
 		let userReferralCode = await db("referral_codes")
@@ -177,7 +203,7 @@ const getReferralcode = async (req, res, next) => {
 			return res.status(messageObj.status).json(messageObj);
 		}
 
-		let userMessage = "Server facing an error. Create account again!";
+		let userMessage = "Server facing an error!";
 		const errorObject = handleMessage(
 			"INTERNAL_SERVER_ERROR",
 			null,
@@ -185,7 +211,7 @@ const getReferralcode = async (req, res, next) => {
 		);
 		return res.status(errorObject.status).json(errorObject);
 	} catch (err) {
-		let userMessage = "Server facing an error. Create account again!";
+		let userMessage = "Server facing an error!";
 		const errorObject = handleMessage(
 			"INTERNAL_SERVER_ERROR",
 			null,
@@ -196,7 +222,7 @@ const getReferralcode = async (req, res, next) => {
 };
 
 const handleUsernameUpdate = async (req, res, next) => {
-	let userId = req.user.id;
+	let userId = req.user.user_id;
 	let { newUsername } = req.body;
 
 	if (!newUsername) {
@@ -207,18 +233,15 @@ const handleUsernameUpdate = async (req, res, next) => {
 
 	let isUsernameValid = checkUsername(newUsername);
 	if (!isUsernameValid) {
-		let userMessage = "Username can only contain _";
+		let userMessage = "Username is not valid!";
 		const errorObj = handleMessage("INVALID_REQUEST_SYNTAX", null, userMessage);
 		return res.status(errorObj.status).json(errorObj);
 	}
 
 	try {
-		let updatedUsername = await db("users").where({ id: userId }).update(
-			{
-				username: newUsername,
-			},
-			"username"
-		);
+		let updatedUsername = await db("users").where({ id: userId }).update({
+			username: newUsername,
+		});
 
 		let userMessage = "Username Updated!";
 		let messageObj = handleMessage("REQUEST_SUCCESS", null, userMessage);
@@ -234,9 +257,44 @@ const handleUsernameUpdate = async (req, res, next) => {
 	}
 };
 
+const getHoldingOfSpecificEvent = async (req, res, next) => {
+	let userId = req.user.user_id;
+	let eventId = req.params.eventid;
+
+	try {
+		let holding = await db("holdings")
+			.where({ user_id: userId })
+			.andWhere({ event_id: eventId })
+			.select("*");
+
+		if (holding.length === 0) {
+			let userMessage = "User Not Holding the event";
+			const errorObject = handleMessage("NOT_FOUND", null, userMessage);
+			return res.status(errorObject.status).json(errorObject);
+		} else {
+			let userMessage = "Found Holdings";
+			let messageObj = handleMessage(
+				"REQUEST_SUCCESS",
+				holding[0],
+				userMessage
+			);
+			return res.status(messageObj.status).json(messageObj);
+		}
+	} catch (err) {
+		let userMessage = "Server facing an error. Create account again!";
+		const errorObject = handleMessage(
+			"INTERNAL_SERVER_ERROR",
+			null,
+			userMessage
+		);
+		return res.status(errorObject.status).json(errorObject);
+	}
+};
+
 module.exports = {
-	getExistingUser,
-	handleLogin,
+	getHoldingOfSpecificEvent,
+	doesUserExist,
+	getLoggedUser,
 	handleSignup,
 	getReferralcode,
 	handleUsernameUpdate,

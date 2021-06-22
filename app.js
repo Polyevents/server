@@ -40,6 +40,8 @@ const {
 	handleMarket,
 	handleEvent,
 	handleNews,
+	handleComments,
+	handlePortfolio,
 } = require("./src/routes");
 
 app.use("/api/v1/user", handleAuth);
@@ -47,7 +49,8 @@ app.use("/api/v1/check", handleValidity);
 app.use("/api/v1/market", handleMarket);
 app.use("/api/v1/event", handleEvent);
 app.use("/api/v1/news", handleNews);
-// app.use("/api/v1/comment", handleComments);
+app.use("/api/v1/comment", handleComments);
+app.use("/api/v1/portfolio", handlePortfolio);
 
 //Port listener
 const PORT = parseInt(process.env.PORT);

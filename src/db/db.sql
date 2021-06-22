@@ -7,6 +7,7 @@
 -- decision_type is Buy/Sell TRUE/FALSE
 -- token_type is Yes/No TRUE/FALSE
 
+
 CREATE TABLE users (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY, 
     email VARCHAR UNIQUE NOT NULL,
@@ -21,14 +22,16 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
 CREATE TABLE user_roles(
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
     user_id VARCHAR UNIQUE NOT NULL REFERENCES users(id),
   	-- role_type: admin/user
-	  role_type TEXT NOT NULL,
+		role_type TEXT NOT NULL DEFAULT 'user',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 CREATE TABLE referral_codes (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
@@ -43,7 +46,7 @@ CREATE TABLE referral_codes (
 CREATE TABLE markets (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
     image_link VARCHAR NOT NULL,
-		-- store market name in small letters
+	-- store market name in small letters
     name TEXT NOT NULL,
     volume NUMERIC(10, 2) DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -56,15 +59,15 @@ CREATE TABLE events (
     market_id VARCHAR NOT NULL REFERENCES markets(id),
     image_link VARCHAR NOT NULL,
     question_text TEXT NOT NULL,
+    resolve_date TIMESTAMPTZ NOT NULL,
+    bid_close_date TIMESTAMPTZ NOT NULL,
+    source_link VARCHAR NOT NULL,
     yes_price NUMERIC(10, 2) NOT NULL DEFAULT 50,
     no_price NUMERIC(10, 2) NOT NULL DEFAULT 50,
     volume NUMERIC(10, 2) NOT NULL DEFAULT 0,
-    resolve_date TIMESTAMPTZ NOT NULL,
-    bid_close_date TIMESTAMPTZ NOT NULL,
     is_resolved BOOLEAN DEFAULT FALSE,
     answer BOOLEAN DEFAULT NULL,
-    source_link VARCHAR NOT NULL,
-    remark TEXT NOT NULL,
+    remark TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -84,12 +87,11 @@ CREATE TABLE comments (
 CREATE TABLE portfolios (
     id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
     user_id VARCHAR UNIQUE NOT NULL REFERENCES users(id),
-    wallet_balance NUMERIC(10, 2) NOT NULL DEFAULT 500,
-		-- updated at each call of buy/sell
-		portfolio_value NUMERIC(10, 2) NOT NULL DEFAULT 0,		
+    wallet_balance NUMERIC(10, 2) NOT NULL DEFAULT 500,		
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 -- When a user clicks sell, check if he has enough tokens to sell and if the tokens after selling go to 0 then pop the row
 CREATE TABLE holdings (
@@ -119,7 +121,6 @@ CREATE TABLE bids (
     user_id VARCHAR NOT NULL REFERENCES users(id),
     event_id VARCHAR NOT NULL REFERENCES events(id),
     number_of_tokens INT NOT NULL,
-    price_of_token NUMERIC(10,2) NOT NULL,
     token_type BOOLEAN NOT NULL,
     decision_type BOOLEAN NOT NULL,
     yes_price NUMERIC(10,2) NOT NULL,
@@ -139,6 +140,7 @@ CREATE TABLE news(
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 -- CREATE TABLE transactions(
 -- 		id VARCHAR UNIQUE NOT NULL,
