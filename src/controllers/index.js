@@ -1,15 +1,15 @@
 const {
-	handleLogin,
 	handleSignup,
-	getExistingUser,
+	getLoggedUser,
 	getReferralcode,
 	handleUsernameUpdate,
+	doesUserExist,
+	getHoldingOfSpecificEvent,
 } = require("./Auth.controllers.js");
 
 const {
 	handleReferralCodeCheck,
 	handleUsernameCheck,
-	isUserExisting,
 } = require("./CheckValidity.controllers");
 
 const {
@@ -24,30 +24,58 @@ const {
 	getEventsOfSpecificMarket,
 	createEvent,
 	getEventsOfFollowedMarkets,
+	getSpecificEvent,
+	fetchChartDetailsOfSpecificEvent,
+	placeBuyBid,
+	placeSellBid,
 } = require("./Event.controllers");
 
 const { fetchNews, storeNews, deleteNews } = require("./News.controllers");
 
-// const { getEventComments } = require("./Comment.controllers");
+const {
+	getAllCommentsOfEvent,
+	addComment,
+	deleteComment,
+	likeComment,
+	unlikeComment,
+} = require("./Comment.controllers");
+
+const {
+	getPortfolioDetails,
+	fetchHoldings,
+	fetchPastHoldings,
+} = require("./Portfolio.controllers");
 
 module.exports = {
+	getHoldingOfSpecificEvent,
+	getSpecificEvent,
+	getPortfolioDetails,
+	fetchHoldings,
+	fetchPastHoldings,
+	addComment,
+	deleteComment,
+	likeComment,
+	unlikeComment,
+	getAllCommentsOfEvent,
+	doesUserExist,
 	getEventsOfFollowedMarkets,
 	createEvent,
 	getEventsOfSpecificMarket,
 	deleteNews,
 	storeNews,
 	fetchNews,
-	handleLogin,
 	unfollowMarket,
 	handleUsernameUpdate,
 	handleSignup,
-	isUserExisting,
 	getReferralcode,
 	followMarket,
-	getExistingUser,
+	getLoggedUser,
 	handleReferralCodeCheck,
 	handleUsernameCheck,
 	listMarkets,
 	requestEvent,
 	trendingMarkets,
+	fetchChartDetailsOfSpecificEvent,
+	placeBuyBid,
+	placeSellBid,
 };

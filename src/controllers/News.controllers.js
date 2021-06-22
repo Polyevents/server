@@ -14,13 +14,14 @@ const fetchNews = async (req, res, next) => {
 		if (newsPosts.length === 0) {
 			let userMessage = "News Not Found";
 			let errorObj = handleMessage("NOT_FOUND", null, userMessage);
-			return res.status(error.status).json(errorObj);
+			return res.status(errorObj.status).json(errorObj);
 		}
 
 		let userMessage = "News found";
 		let messageObj = handleMessage("REQUEST_SUCCESS", newsPosts, userMessage);
 		return res.status(messageObj.status).json(messageObj);
 	} catch (err) {
+		console.log(err);
 		let userMessage = "Server facing an error!";
 		const errorObject = handleMessage(
 			"INTERNAL_SERVER_ERROR",

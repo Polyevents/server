@@ -25,52 +25,25 @@ const listMarkets = async (req, res, next) => {
 };
 
 const followMarket = async (req, res, next) => {
-	let userId = req.user.id;
 	let marketId = req.params.id;
+	let userId = req.user.user_id;
+	let followedMarkets = req.user.markets_followed;
 
 	try {
 		await db.transaction(async (trx) => {
-			let foundMarket = await trx("markets")
-				.where({
-					id: marketId,
-				})
-				.select("id");
-
-			if (foundMarket[0].id === marketId) {
-				let getUserMarketsArray = await trx("users").where({
-					id: userId,
-				});
-
-				getUserMarkets = getUserMarketsArray[0];
-
-				if (!getUserMarkets.includes(marketId)) {
-					getUserMarkets.push(marketId);
-					let followMarket = await trx("users").update({
-						markets_followed: getUserMarkets,
-					});
-					let userMessage = "Market followed";
-					const messageObj = handleMessage(
-						"REQUEST_SUCCESS",
-						null,
-						userMessage
-					);
-					return res.status(messageObj.status).json(messageObj);
-				} else {
-					let userMessage = "Market Already Followed";
-					const errorObject = handleMessage(
-						"RESOURCE_EXISTS",
-						null,
-						userMessage
-					);
-					return res.status(errorObject.status).json(errorObject);
-				}
+			if (!followedMarkets.includes(marketId)) {
+				followedMarkets.push(marketId);
+				let followMarket = await trx("users")
+					.update({
+						markets_followed: followedMarkets,
+					})
+					.where({ id: userId });
+				let userMessage = "Market followed";
+				const messageObj = handleMessage("REQUEST_SUCCESS", null, userMessage);
+				return res.status(messageObj.status).json(messageObj);
 			} else {
-				let userMessage = "Server facing an error!";
-				const errorObject = handleMessage(
-					"INTERNAL_SERVER_ERROR",
-					null,
-					userMessage
-				);
+				let userMessage = "Market Already Followed";
+				const errorObject = handleMessage("RESOURCE_EXISTS", null, userMessage);
 				return res.status(errorObject.status).json(errorObject);
 			}
 		});
@@ -86,56 +59,36 @@ const followMarket = async (req, res, next) => {
 };
 
 const unfollowMarket = async (req, res, next) => {
-	let userId = req.user.id;
 	let marketId = req.params.id;
+	let userId = req.user.user_id;
+	let followedMarkets = req.user.markets_followed;
+
+	if (followedMarkets.length === 1) {
+		const userMessage = "Can't unfollow all the markets!";
+		const errorObj = handleMessage("INVALID_REQUEST_SYNTAX", null, userMessage);
+		return res.status(errorObj.status).json(errorObj);
+	}
 
 	try {
 		await db.transaction(async (trx) => {
-			let foundMarket = await trx("markets").where(
-				{
-					id: marketId,
-				},
-				"id"
-			);
-
-			if (foundMarket[0] === marketId) {
-				let getUserMarketsArray = await trx("users").where(
-					{
-						id: userId,
-					},
-					"markets_followed"
-				);
-
-				getUserMarkets = getUserMarketsArray[0];
-
-				if (getUserMarkets.includes(marketId)) {
-					const index = getUserMarkets.indexOf(marketId);
-					if (index > -1) {
-						getUserMarkets.splice(index, 1);
-					}
-
-					let unFollowMarket = await trx("users").update(
-						{
-							markets_followed: getUserMarkets,
-						},
-						"markets_followed"
-					);
-					let userMessage = "Market unfollowed";
-					const messageObj = handleMessage(
-						"REQUEST_SUCCESS",
-						null,
-						userMessage
-					);
-					return res.status(messageObj.status).json(messageObj);
-				} else {
-					let userMessage = "Market Already Not Followed";
-					const errorObject = handleMessage(
-						"RESOURCE_EXISTS",
-						null,
-						userMessage
-					);
-					return res.status(errorObject.status).json(errorObject);
+			if (followedMarkets.includes(marketId)) {
+				const index = followedMarkets.indexOf(marketId);
+				if (index > -1) {
+					followedMarkets.splice(index, 1);
 				}
+
+				let unFollowMarket = await trx("users")
+					.update({
+						markets_followed: followedMarkets,
+					})
+					.where({ id: userId });
+				let userMessage = "Market unfollowed";
+				const messageObj = handleMessage("REQUEST_SUCCESS", null, userMessage);
+				return res.status(messageObj.status).json(messageObj);
+			} else {
+				let userMessage = "Market Already Not Followed";
+				const errorObject = handleMessage("RESOURCE_EXISTS", null, userMessage);
+				return res.status(errorObject.status).json(errorObject);
 			}
 		});
 	} catch (err) {
