@@ -9,11 +9,13 @@ const {
 } = require("../controllers");
 const { verifyToken } = require("../middlewares");
 
-router.get("/", verifyToken, getLoggedUser);
-router.get("/exists", doesUserExist);
-router.post("/signup", handleSignup);
-router.get("/referral-code", verifyToken, getReferralcode);
+router.post("/exists", doesUserExist);
 router.put("/username", verifyToken, handleUsernameUpdate);
+router.get("/referral-code", verifyToken, getReferralcode);
+router.post("/signup", handleSignup);
+
+router.get("/", verifyToken, getLoggedUser);
+
 router.get("/holding/:eventid", verifyToken, getHoldingOfSpecificEvent);
 
 module.exports = router;

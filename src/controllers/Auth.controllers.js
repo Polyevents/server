@@ -26,7 +26,7 @@ const doesUserExist = async (req, res, next) => {
 			const errorObj = handleMessage("NOT_FOUND", null, userMessage);
 			return res.status(errorObj.status).json(errorObj);
 		}
-
+		
 		debug(
 			"Auth.cont.js",
 			32,
