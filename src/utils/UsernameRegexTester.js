@@ -1,6 +1,6 @@
 const handleMessage = require("./MessageHandler");
 
-let regex = /^(?=.{5,14}$)(?![])(?!.*[]{2})[a-z0-9_]+(?<![_])$/;
+let regex = /^(?=.{5,14}$)[a-zA-Z0-9]*$/;
 
 function checkUsername(username) {
 	let isUsernameValid = regex.test(username);
