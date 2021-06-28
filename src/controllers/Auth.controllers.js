@@ -26,7 +26,7 @@ const doesUserExist = async (req, res, next) => {
 			const errorObj = handleMessage("NOT_FOUND", null, userMessage);
 			return res.status(errorObj.status).json(errorObj);
 		}
-		
+
 		debug(
 			"Auth.cont.js",
 			32,
@@ -174,12 +174,6 @@ const handleSignup = async (req, res, next) => {
 };
 
 const getLoggedUser = async (req, res, next) => {
-	if (!req.user) {
-		let userMessage = "Log in to continue!";
-		const errorObject = handleMessage("NOT_LOGGED_IN", null, userMessage);
-		return res.status(errorObject.status).json(errorObject);
-	}
-
 	let userMessage = null;
 	const messageObj = handleMessage("REQUEST_SUCCESS", req.user, userMessage);
 	return res.status(messageObj.status).json(messageObj);

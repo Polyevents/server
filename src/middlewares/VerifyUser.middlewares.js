@@ -17,6 +17,7 @@ const verifyToken = async (req, res, next) => {
 	if (!authorization) return loginErrorMessage(res);
 
 	const token = authorization.replace("Bearer ", "");
+
 	if (!token) return loginErrorMessage(res);
 
 	jwt.verify(token, JWT_SECRET, async (err, payload) => {
